@@ -2,7 +2,7 @@ import gurobipy as gp
 import EVRPTW as evrptw
 import numpy as np
 
-def solver(depot: list, recharge_stations: list, clients: list, vehicle: list, instance: str, time_limit: int = 500, plot: bool = False) -> tuple[float, int, float]:
+def solver(depot: list, recharge_stations: list, clients: list, vehicle: list, instance: str, time_limit: int, plot: bool) -> tuple[float, int, float]:
     """
     Solves an Electric Vehicle Routing Problem with Time Windows (EVRPTW) instance using a mixed-integer linear programming (MILP) model.
 
@@ -22,8 +22,8 @@ def solver(depot: list, recharge_stations: list, clients: list, vehicle: list, i
             - g (float): Recharge rate at recharge stations.
             - v (float): Average travel speed.
         instance (str): Name or identifier of the instance, used in plot title and saved file name.
-        time_limit (int, optional): Time limit for the optimization solver in seconds. Defaults to 500.
-        plot (bool, optional): If True, plots the solution path using `plot_result` function. Defaults to False.
+        time_limit (int): Time limit for the optimization solver in seconds.
+        plot (bool): If True, plots the solution path using `plot_result` function.
 
     Returns:
         tuple: A tuple containing the following elements:
@@ -71,7 +71,7 @@ def solver(depot: list, recharge_stations: list, clients: list, vehicle: list, i
     t = {(i, j): (np.hypot(x_c[i]-x_c[j], y_c[i]-y_c[j]))/v for i, j in A}
 
     m = gp.Model()
-
+    print(f'Running: {instance}')
     # variáveis de decisão
     tau = m.addVars(V_line_0_np1, vtype=gp.GRB.CONTINUOUS)
     u = m.addVars(V_line_0_np1, vtype=gp.GRB.CONTINUOUS)
@@ -105,7 +105,7 @@ def solver(depot: list, recharge_stations: list, clients: list, vehicle: list, i
     m.addConstrs(
         (tau[i] + t[i, j]*x[i, j] + g*(Q - b[i]) - (l[0] + g*Q)*(1 - x[i, j])) <= tau[j] for i in F for j in V_line_np1 if i!=j)
 
-    # c6 (restrição no artigo 7)
+    # c6 (restrição 7 no artigo)
     m.addConstrs(tau[j] <= l[j] for j in V_line_0_np1)
     m.addConstrs(e[j] <= tau[j]  for j in V_line_0_np1)
 

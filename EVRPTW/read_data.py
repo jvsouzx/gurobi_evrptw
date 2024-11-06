@@ -14,7 +14,7 @@ def read_instance(file: str) -> tuple[list[list], list[list], list[list], list]:
     Returns:
         tuple: A tuple containing four lists:
             - depot (list of list): A list of coordinates for the depot node.
-            - recharge_stations (list of lis): A list of coordinates for each recharge station.
+            - recharge_stations (list of list): A list of coordinates for each recharge station.
             - clients (list of list): A list of coordinates for each client node.
             - vehicle (list): A list of attributes for each vehicle, extracted from the second block.
     """
@@ -42,7 +42,7 @@ def read_instance(file: str) -> tuple[list[list], list[list], list[list], list]:
     
     return depot, recharge_stations, clients, vehicle
 
-def append_data(source, x_c, y_c, q, e, l, s, repeat=1):
+def append_data(source: list, x_c: list, y_c: list, q: list, e: list, l: list, s: list, repeat: int=1):
     """
     Appends data from a source list to specified lists.
 

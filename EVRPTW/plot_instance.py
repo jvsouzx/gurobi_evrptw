@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import os
 
-def plot_result(x_c, y_c, active_arcs, num_recharge_stations, instance):
+def plot_result(x_c: list, y_c: list, active_arcs: list, num_recharge_stations: int, instance: str):
     """    
     Plots and saves a visual representation of a routing solution.
 
