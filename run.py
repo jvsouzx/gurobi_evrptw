@@ -11,17 +11,26 @@ STATUS_CODE = {
 
 PLOT = '-p' in sys.argv
 
-if '-t' in sys.argv:
+if '-l' in sys.argv:
     try:
-        TIME_LIMIT = sys.argv[sys.argv.index('-t') + 1]
+        TIME_LIMIT = int(sys.argv[sys.argv.index('-l') + 1])
     except IndexError:
-        print('Um valor deve ser fornecido após "-t"')
+        print('Um valor deve ser fornecido após "-l"')
         sys.exit(1)
 else:
     TIME_LIMIT = 500
 
+if '-t' in sys.argv:
+    try:
+        THREADS = int(sys.argv[sys.argv.index('-t') + 1])
+    except IndexError:
+        print('Um valor deve ser fornecido após "-t"')
+        sys.exit(1)
+else:
+    THREADS = 1    
+
 dir = 'instances'
-files = [file for file in os.listdir(dir) if file.endswith(('C5.txt', 'C10.txt', 'C15.txt', '_21.txt'))]
+files = [file for file in os.listdir(dir) if file.endswith(('C5.txt'))] 
 print(f'Time Limit: {TIME_LIMIT}s\tPlot: {PLOT}\n')
 
 with open('resultados.txt', 'w') as f:
@@ -30,5 +39,5 @@ with open('resultados.txt', 'w') as f:
         instance = file.replace('.txt', '')
         path = dir + '/' + file
         depot, recharge_stations, clients, vehicle = evrptw.read_instance(path)
-        obj, status, runtime = evrptw.solver(depot, recharge_stations, clients, vehicle, instance, TIME_LIMIT, PLOT)
+        obj, status, runtime = evrptw.solver(depot, recharge_stations, clients, vehicle, instance, THREADS, TIME_LIMIT, PLOT)
         f.write(f'{instance},{obj:.4f},{STATUS_CODE[status]},{runtime:.4f}\n')

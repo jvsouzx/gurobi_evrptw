@@ -2,7 +2,7 @@ import gurobipy as gp
 import EVRPTW as evrptw
 import numpy as np
 
-def solver(depot: list, recharge_stations: list, clients: list, vehicle: list, instance: str, time_limit: int, plot: bool) -> tuple[float, int, float]:
+def solver(depot: list, recharge_stations: list, clients: list, vehicle: list, instance: str, threads: int, time_limit: int, plot: bool) -> tuple[float, int, float]:
     """
     Solves an Electric Vehicle Routing Problem with Time Windows (EVRPTW) instance using a mixed-integer linear programming (MILP) model.
 
@@ -126,6 +126,7 @@ def solver(depot: list, recharge_stations: list, clients: list, vehicle: list, i
     m.addConstrs(b[j] <= Q - (h* d[i, j])*x[i, j] for j in V_line_np1 for i in F_0 if i!=j)
 
     m.setParam(gp.GRB.Param.OutputFlag, 0)
+    m.Params.Threads = threads
     m.setParam(gp.GRB.Param.TimeLimit, time_limit)
     m.optimize()
 

@@ -20,16 +20,17 @@ Para executar o solver, é necessário ter as seguintes bibliotecas instaladas:
 Para compilar e executar o solver, utilize o seguinte comando no terminal:
 
 ```shell
-python run.py -t {tempo_em_segundos} -p
+python run.py -t {numero_de_threads} -l {tempo_em_segundos} -p 
 ```
 
-- **`-t {tempo_em_segundos}`**: Define o tempo limite para a execução do solver (padrão: 500 segundos).
+- **`-l {tempo_em_segundos}`**: Define o tempo limite para a execução do solver (padrão: 500 segundos).
 - **`-p`**: Define se os gráficos das rotas serão gerados (padrão: `false`).
+- **`-t`**: Define o número de threads utilizadas pelo Gurobi (padrão: 2).
 
 Exemplo:
 
 ```shell
-python run.py -t 7200 # Define o tempo limite de 2 horas para a execução do solver e não gera os gráficos das rotas.
+python run.py -t 2 -l 7200 # Define o número de threads para 2 e o tempo limite de 2 horas para a execução do solver e não gera os gráficos das rotas.
 ```
 
 > **Nota**: Certifique-se de que todas as bibliotecas necessárias estão instaladas e configuradas antes de iniciar o solver. Para solucionar as instâncias maiores é necessária uma licensa do GUROBI.
