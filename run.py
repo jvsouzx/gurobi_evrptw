@@ -21,8 +21,8 @@ def parse_args():
 
 def get_instances(instance_set):
     dir_path = 'instances'
-    small_instances = [file for file in os.listdir(dir_path) if file.endswith(('C5.txt', 'C10.txt', 'C15.txt'))]
-    large_instances = [file for file in os.listdir(dir_path) if file.endswith('_21.txt')]
+    small_instances = [file for file in os.listdir(dir_path) if file.endswith(('C5.txt', 'C10.txt','C15.txt'))] # 36 instancias pequenas
+    large_instances = [file for file in os.listdir(dir_path) if file.endswith('_21.txt')] # 56 instancias grandes (100 clientes)
     all_instances = small_instances + large_instances
     return {
         'small': small_instances,
@@ -34,8 +34,8 @@ def solve_instance(file, dir_path, threads, time_limit, plot):
     name = file.replace('.txt', '')
     path = os.path.join(dir_path, file)
     depot, recharge_stations, clients, vehicle = evrptw.read_instance(path)
-    obj, status, runtime = evrptw.solver(depot, recharge_stations, clients, vehicle, name, threads, time_limit, plot)
-    return f'{name},{obj:.4f},{STATUS_CODE[status]},{runtime:.4f}\n'
+    vehicles_used, obj, total_route_time, status, runtime, mipgap = evrptw.solver(depot, recharge_stations, clients, vehicle, name, threads, time_limit, plot)
+    return f'{name}, {vehicles_used}, {obj:.4f}, {total_route_time:.4f}, {STATUS_CODE[status]}, {runtime:.4f}, {mipgap:.4f}\n'
 
 def main():
     args = parse_args()
@@ -45,7 +45,7 @@ def main():
     print(f'Time Limit: {args.l}s\tThreads: {args.t}\tParallelism: {args.p}\tInstances: {args.instances}\tPlot: {args.plot}\n')
 
     with open('resultados.txt', 'w') as f, ThreadPoolExecutor(max_workers=min(args.p, len(instances))) as executor:
-        f.write('instance,obj,status,runtime\n')
+        f.write('instance, vehicles_used, obj, total_route_time, status, runtime, MIPgap\n')
         futures = {executor.submit(solve_instance, instance, dir_path, args.t, args.l, args.plot): instance for instance in instances}
         
         for future in as_completed(futures):

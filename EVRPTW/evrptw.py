@@ -2,34 +2,36 @@ import gurobipy as gp
 import EVRPTW as evrptw
 import numpy as np
 
-def solver(depot: list, recharge_stations: list, clients: list, vehicle: list, instance: str, threads: int, time_limit: int, plot: bool) -> tuple[float, int, float]:
+def solver(depot: list, recharge_stations: list, clients: list, vehicle: list, instance: str, threads: int, time_limit: int, plot: bool) -> tuple[int, float, float, int, float, float]:
     """
     Solves an Electric Vehicle Routing Problem with Time Windows (EVRPTW) instance using a mixed-integer linear programming (MILP) model.
 
-    This function constructs and solves an optimization model for an EVRPTW problem,
-    considering factors such as battery capacity, demand, recharge stations, and time windows.
-    It minimizes the total travel distance while meeting time windows and other constraints
-    on battery consumption and load capacity.
+    This function constructs and optimizes an EVRPTW model that minimizes the total travel distance while respecting constraints such as battery capacity, load capacity, and time windows.
+    The function takes into account the depot, clients, and recharge stations, using vehicle-specific parameters to find the optimal route.
 
     Args:
-        depot (list): List of depot attributes, including coordinates, time windows, and service time.
-        recharge_stations (list): List of recharge station attributes, with coordinates and time windows.
-        clients (list): List of client attributes, including coordinates, demand, time windows, and service time.
-        vehicle (list): List containing the vehicle attributes:
-            - Q (float): Battery capacity of the vehicle.
-            - C (float): Load capacity of the vehicle.
+        depot (list): Attributes of the depot, including coordinates, time windows, and service time.
+        recharge_stations (list): Attributes of recharge stations, including coordinates and time windows.
+        clients (list): Attributes of the clients, such as coordinates, demand, time windows, and service time.
+        vehicle (list): List of vehicle attributes:
+            - Q (float): Battery capacity.
+            - C (float): Load capacity.
             - h (float): Battery consumption rate.
-            - g (float): Recharge rate at recharge stations.
+            - g (float): Recharge rate at stations.
             - v (float): Average travel speed.
-        instance (str): Name or identifier of the instance, used in plot title and saved file name.
-        time_limit (int): Time limit for the optimization solver in seconds.
-        plot (bool): If True, plots the solution path using `plot_result` function.
+        instance (str): Identifier for the instance, used in plot title and saved file name.
+        threads (int): Number of threads for the optimization solver.
+        time_limit (int): Time limit in seconds for the optimization solver.
+        plot (bool): If True, plots the solution path using `plot_result`.
 
     Returns:
-        tuple: A tuple containing the following elements:
-            - m.ObjVal (float): Objective value of the solved model, representing the minimized total travel distance.
-            - m.Status (int): Status of the optimization model (e.g., optimal, infeasible).
-            - m.Runtime (float): Time taken by the solver to find the solution.
+        tuple: A tuple containing:
+            - vehicles_used (int): Number of vehicles required.
+            - m.ObjVal (float): Objective value, representing minimized total travel distance.
+            - total_route_time (float): Total travel time across the solution path.
+            - m.Status (int): Solver status (e.g., optimal, infeasible).
+            - m.Runtime (float): Solver runtime in seconds.
+            - m.MIPgap (float): Final MIP gap achieved by the solver, if applicable.
     """
     # x_c coordenada x
     # y_c coordenada y
@@ -45,6 +47,7 @@ def solver(depot: list, recharge_stations: list, clients: list, vehicle: list, i
     # g taxa de recarga 
     # v velocidade média
     Q, C, h, g, v = vehicle
+    v = 52 #(média das velocidades máximas permitidas em vias urbanas (br))
 
     evrptw.append_data(depot, x_c, y_c, q, e, l, s)
     evrptw.append_data(recharge_stations, x_c, y_c, q, e, l, s, repeat=2)
@@ -134,4 +137,11 @@ def solver(depot: list, recharge_stations: list, clients: list, vehicle: list, i
         active_arcs = [a for a in A if x[a].X > 0.99]
         evrptw.plot_result(x_c, y_c, active_arcs, num_recharge_stations, instance)
     
-    return m.ObjVal, m.Status, m.Runtime
+    if m.SolCount > 0:
+        vehicles_used = sum(x[depot_0[0], j].X > 0.99 for j in V_line_np1)
+        total_route_time = sum(t[i, j] * x[i, j].X for i, j in A if x[i, j].X > 0.99)
+    else:
+        vehicles_used = 0 
+        total_route_time = 0
+    
+    return vehicles_used, m.ObjVal, total_route_time, m.Status, m.Runtime, m.MIPgap
