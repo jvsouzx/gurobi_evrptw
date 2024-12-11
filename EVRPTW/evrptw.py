@@ -1,5 +1,5 @@
 import gurobipy as gp
-import EVRPTW as evrptw
+import common as com
 import numpy as np
 
 def solver(depot: list, recharge_stations: list, clients: list, vehicle: list, instance: str, threads: int, time_limit: int, plot: bool) -> tuple[int, float, float, int, float, float]:
@@ -49,10 +49,10 @@ def solver(depot: list, recharge_stations: list, clients: list, vehicle: list, i
     Q, C, h, g, v = vehicle
     v = 52 #(média das velocidades máximas permitidas em vias urbanas (br))
 
-    evrptw.append_data(depot, x_c, y_c, q, e, l, s)
-    evrptw.append_data(recharge_stations, x_c, y_c, q, e, l, s, repeat=2)
-    evrptw.append_data(clients, x_c, y_c, q, e, l, s)
-    evrptw.append_data(depot, x_c, y_c, q, e, l, s)
+    com.append_data(depot, x_c, y_c, q, e, l, s)
+    com.append_data(recharge_stations, x_c, y_c, q, e, l, s, repeat=2)
+    com.append_data(clients, x_c, y_c, q, e, l, s)
+    com.append_data(depot, x_c, y_c, q, e, l, s)
 
     num_depots = len(depot)
     num_recharge_stations = len(recharge_stations)*2
@@ -134,14 +134,27 @@ def solver(depot: list, recharge_stations: list, clients: list, vehicle: list, i
     m.optimize()
 
     if plot:
-        active_arcs = [a for a in A if x[a].X > 0.99]
-        evrptw.plot_result(x_c, y_c, active_arcs, num_recharge_stations, instance)
+        if m.SolCount > 0:
+            active_arcs = [a for a in A if x[a].X > 0.99]
+            com.plot_result(x_c, y_c, active_arcs, instance, num_recharge_stations)
+        else: 
+            print('Don\'t find a solution!')
     
     if m.SolCount > 0:
         vehicles_used = sum(x[depot_0[0], j].X > 0.99 for j in V_line_np1)
         total_route_time = sum(t[i, j] * x[i, j].X for i, j in A if x[i, j].X > 0.99)
+        recharges = []
+        for j in F:
+            for i in V_line_0:
+                if i != j:
+                    if x[i, j].X > 0.99:
+                        recharge_amount = max(0, b[j].X - (b[i].X - h * d[i, j]))
+                        recharges.append(recharge_amount)
+                        break
+        qtd_recharge = sum(recharges)
+
     else:
         vehicles_used = 0 
         total_route_time = 0
     
-    return vehicles_used, m.ObjVal, total_route_time, m.Status, m.Runtime, m.MIPgap
+    return vehicles_used, m.ObjVal, total_route_time, qtd_recharge, m.Status, m.Runtime, m.MIPgap

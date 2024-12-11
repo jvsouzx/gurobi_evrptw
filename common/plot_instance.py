@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import os
 
-def plot_result(x_c: list, y_c: list, active_arcs: list, num_recharge_stations: int, instance: str):
+def plot_result(x_c: list, y_c: list, active_arcs: list, instance: str, num_recharge_stations: int = 0):
     """    
     Plots and saves a visual representation of a routing solution.
 
@@ -14,8 +14,8 @@ def plot_result(x_c: list, y_c: list, active_arcs: list, num_recharge_stations: 
         x_c (list of float): x-coordinates of points (depot, recharge stations, and customers).
         y_c (list of float): y-coordinates of points (depot, recharge stations, and customers).
         active_arcs (list of tuple of int): Pairs of indices representing active arcs (connections) between points.
-        num_recharge_stations (int): The number of recharge stations.
         instance (str): The name of the instance, used as the title of the plot and file name.
+        num_recharge_stations (int): The number of recharge stations (default to 0).
     """
     if not os.path.exists('images'):
       os.makedirs('images')
