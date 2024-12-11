@@ -1,1 +1,1 @@
-from vrptw import solver
+from .vrptw import solver

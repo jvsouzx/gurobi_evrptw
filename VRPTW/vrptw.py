@@ -1,5 +1,5 @@
 import gurobipy as gp
-import Common as com
+import common as com
 import numpy as np
 
 def solver(depot: list, clients: list, vehicle: list, instance: str, threads: int, time_limit: int, plot: bool) -> tuple[int, float, float, int, float]:
